@@ -8,6 +8,7 @@ import {
   InlineFieldRow,
   Select,
   Button,
+  Alert,
 } from '@grafana/ui';
 import { ArangoDBQuery, ArangoDBDataSourceOptions } from './types';
 
@@ -15,6 +16,7 @@ type Props = QueryEditorProps<DataSourceApi<ArangoDBQuery, ArangoDBDataSourceOpt
 
 interface State {
   fieldsInput: string;
+  aqlValidationWarning: string | null;
 }
 
 export class QueryEditor extends PureComponent<Props, State> {
@@ -22,6 +24,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     super(props);
     this.state = {
       fieldsInput: props.query.fields?.join(', ') || '',
+      aqlValidationWarning: null,
     };
   }
 
@@ -34,6 +37,12 @@ export class QueryEditor extends PureComponent<Props, State> {
         queryType: 'collection',
         refId: query.refId || 'A',
       });
+    }
+
+    // Validate existing AQL query if present
+    if (query.queryType === 'aql' && query.aqlQuery) {
+      const warning = this.validateAQLQuery(query.aqlQuery);
+      this.setState({ aqlValidationWarning: warning });
     }
   }
 
@@ -66,22 +75,42 @@ export class QueryEditor extends PureComponent<Props, State> {
   ];
 
   onQueryChange = (value: Partial<ArangoDBQuery>) => {
-    const { onChange, query, onRunQuery } = this.props;
+    const { onChange, query } = this.props;
     const newQuery = { ...query, ...value };
     onChange(newQuery);
     
     // Add debug logging
     console.log('ArangoDB Query Changed:', newQuery);
     
-    // Trigger query execution for certain changes
-    if (value.aqlQuery !== undefined || value.collection !== undefined) {
-      console.log('Triggering query execution...');
-      onRunQuery();
-    }
+    // Note: Auto-execution removed for performance reasons
+    // Users must click "Run Query" button to execute queries
   };
 
   onQueryTypeChange = (value: string) => {
     this.onQueryChange({ queryType: value as 'aql' | 'collection' });
+  };
+
+  validateAQLQuery = (query: string): string | null => {
+    if (!query) {
+      return null;
+    }
+
+    // Convert query to uppercase for case-insensitive matching
+    const upperQuery = query.toUpperCase();
+    
+    // List of write operations that should be blocked
+    const writeOperations = ['REMOVE', 'UPDATE', 'REPLACE', 'INSERT', 'UPSERT'];
+    
+    // Check for each write operation
+    for (const operation of writeOperations) {
+      // Use regex to match the operation as a whole word (not part of another word)
+      const pattern = new RegExp(`\\b${operation}\\b`);
+      if (pattern.test(upperQuery)) {
+        return `Write operation '${operation}' is not allowed in queries. Only read operations (FOR, FILTER, SORT, LIMIT, RETURN, etc.) are permitted.`;
+      }
+    }
+    
+    return null;
   };
 
   onCollectionChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -89,7 +118,11 @@ export class QueryEditor extends PureComponent<Props, State> {
   };
 
   onAQLQueryChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    this.onQueryChange({ aqlQuery: event.target.value });
+    const newQuery = event.target.value;
+    const warning = this.validateAQLQuery(newQuery);
+    
+    this.setState({ aqlValidationWarning: warning });
+    this.onQueryChange({ aqlQuery: newQuery });
   };
 
   onFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -164,10 +197,14 @@ export class QueryEditor extends PureComponent<Props, State> {
               onChange={this.onQueryTypeChange}
             />
           </InlineField>
-          <Button onClick={this.onRunQueryClick} variant="primary">
-            Run Query
+          <Button onClick={this.onRunQueryClick} variant="primary" size="md">
+            Execute Query
           </Button>
         </InlineFieldRow>
+
+        <div style={{ marginBottom: '8px', fontSize: '12px', color: '#999', fontStyle: 'italic' }}>
+          💡 Queries are executed manually for performance reasons in case you query large collections without limit. Click "Execute Query" to run your query.
+        </div>
 
         {query.queryType === 'aql' ? (
           <div>
@@ -185,6 +222,16 @@ export class QueryEditor extends PureComponent<Props, State> {
               </InlineField>
             </InlineFieldRow>
 
+            {this.state.aqlValidationWarning && (
+              <InlineFieldRow>
+                <InlineField grow>
+                  <Alert title="Query Validation Warning" severity="warning">
+                    {this.state.aqlValidationWarning}
+                  </Alert>
+                </InlineField>
+              </InlineFieldRow>
+            )}
+
             <div style={{ marginTop: '8px', fontSize: '12px', color: '#999' }}>
               <strong>Available variables:</strong>
               <br />
@@ -193,6 +240,9 @@ export class QueryEditor extends PureComponent<Props, State> {
               • <code>$__timeTo</code> - End of time range (timestamp)
               <br />
               • <code>$__timeFilter(field)</code> - Expands to: field {'>'}= $__timeFrom AND field {'<'}= $__timeTo
+              <br />
+              <br />
+              <strong>Performance tip:</strong> Use <code>LIMIT</code> clause for large collections to avoid timeout issues.
             </div>
           </div>
         ) : (
@@ -286,7 +336,7 @@ export class QueryEditor extends PureComponent<Props, State> {
                       type="number"
                       value={query.limit || ''}
                       onChange={this.onLimitChange}
-                      placeholder="1000"
+                      placeholder="100 (optional, empty is 100, for more enter value)"
                     />
                   </InlineField>
                 </InlineFieldRow>

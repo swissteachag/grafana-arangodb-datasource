@@ -180,7 +180,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
         <div className="gf-form-group">
           <Legend>Connection Options</Legend>
           
-          <InlineField label="Timeout (seconds)" labelWidth={12}>
+          <InlineField label="Timeout (sec.)" labelWidth={15}>
             <Input
               width={40}
               type="number"
@@ -193,7 +193,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
 
           <InlineField 
             label="Batch Size" 
-            labelWidth={12}
+            labelWidth={15}
             tooltip="Maximum number of documents retrieved per batch. Higher values improve performance for large result sets but use more memory."
           >
             <Input

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
@@ -19,6 +20,36 @@ var (
 	_ backend.CheckHealthHandler    = (*ArangoDBDatasource)(nil)
 	_ instancemgmt.InstanceDisposer = (*ArangoDBDatasource)(nil)
 )
+
+// validateReadOnlyQuery checks if the AQL query contains write operations
+func validateReadOnlyQuery(query string) error {
+	// Convert query to uppercase for case-insensitive matching
+	upperQuery := strings.ToUpper(query)
+	
+	// List of write operations that should be blocked
+	writeOperations := []string{
+		"REMOVE",
+		"UPDATE", 
+		"REPLACE",
+		"INSERT",
+		"UPSERT",
+	}
+	
+	// Check for each write operation
+	for _, operation := range writeOperations {
+		// Use regex to match the operation as a whole word (not part of another word)
+		pattern := `\b` + operation + `\b`
+		matched, err := regexp.MatchString(pattern, upperQuery)
+		if err != nil {
+			return fmt.Errorf("error validating query: %v", err)
+		}
+		if matched {
+			return fmt.Errorf("write operation '%s' is not allowed in queries. Only read operations (FOR, FILTER, SORT, LIMIT, RETURN, etc.) are permitted", operation)
+		}
+	}
+	
+	return nil
+}
 
 // ArangoDBDatasource is the main datasource struct
 type ArangoDBDatasource struct {
@@ -88,6 +119,12 @@ func (d *ArangoDBDatasource) query(ctx context.Context, pCtx backend.PluginConte
 	if qm.QueryType == "aql" && qm.AQLQuery != "" {
 		// Use custom AQL query
 		log.DefaultLogger.Debug("Processing custom AQL query", "originalQuery", qm.AQLQuery)
+		
+		// Validate that the query doesn't contain write operations
+		if err := validateReadOnlyQuery(qm.AQLQuery); err != nil {
+			return backend.ErrDataResponse(backend.StatusBadRequest, err.Error())
+		}
+		
 		aqlQuery = d.interpolateVariables(qm.AQLQuery, query.TimeRange.From.UnixMilli(), query.TimeRange.To.UnixMilli())
 		log.DefaultLogger.Debug("Processed AQL query", "processedQuery", aqlQuery)
 	} else {

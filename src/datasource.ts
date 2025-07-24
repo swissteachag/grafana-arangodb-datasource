@@ -37,11 +37,38 @@ export class DataSource extends DataSourceWithBackend<ArangoDBQuery, ArangoDBDat
   }
 
   /**
+   * Validate that AQL query doesn't contain write operations
+   */
+  private validateReadOnlyQuery(query: string): boolean {
+    if (!query) {
+      return true;
+    }
+
+    // Convert query to uppercase for case-insensitive matching
+    const upperQuery = query.toUpperCase();
+    
+    // List of write operations that should be blocked
+    const writeOperations = ['REMOVE', 'UPDATE', 'REPLACE', 'INSERT', 'UPSERT'];
+    
+    // Check for each write operation
+    for (const operation of writeOperations) {
+      // Use regex to match the operation as a whole word (not part of another word)
+      const pattern = new RegExp(`\\b${operation}\\b`);
+      if (pattern.test(upperQuery)) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /**
    * Filter out queries that shouldn't be executed
    */
   filterQuery(query: ArangoDBQuery): boolean {
     if (query.queryType === 'aql') {
-      return !!query.aqlQuery;
+      // Check if query exists and validate it doesn't contain write operations
+      return !!query.aqlQuery && this.validateReadOnlyQuery(query.aqlQuery);
     }
     return !!query.collection;
   }

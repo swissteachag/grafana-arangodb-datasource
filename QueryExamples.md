@@ -2,6 +2,20 @@
 
 This document provides examples of various queries you can use with the ArangoDB datasource.
 
+## Security Notice
+
+**Important:** This datasource only allows read-only operations for security reasons. The following AQL operations are **NOT ALLOWED** and will result in an error:
+
+- `INSERT` - Creating new documents
+- `UPDATE` - Modifying existing documents  
+- `REPLACE` - Replacing documents
+- `UPSERT` - Insert or update operations
+- `REMOVE` - Deleting documents
+
+Only read operations such as `FOR`, `FILTER`, `SORT`, `LIMIT`, `RETURN`, `COLLECT`, etc. are permitted.
+
+If you attempt to use any write operations, you will see a validation warning in the query editor, and the query will be rejected before execution.
+
 ## Setup Example Data
 
 First, let's create some example collections and data:

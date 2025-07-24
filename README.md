@@ -14,7 +14,9 @@ A comprehensive Grafana datasource plugin for ArangoDB that supports custom AQL 
 - **Field Discovery**: Automatic discovery of collection fields for query building
 - **Schema Heterogeneity**: Handles documents with different schemas in the same collection
 - **Array Support**: Full support for array flattening with index notation
-- **Auto-prefixing**: Automatic `doc.` prefixing in filters for improved usability
+- **Auto-prefixing**: Automatic prefixing in filters for improved usability
+- **Security**: Read-only query validation prevents write operations (INSERT, UPDATE, REMOVE, REPLACE, UPSERT)
+- **Performance Control**: Manual query execution prevents accidental execution of expensive queries
 
 ## Installation
 
@@ -348,13 +350,14 @@ Example document structure:
 
 ## Performance Tips
 
-1. **Indexes**: Create appropriate indexes on fields used in filters and time ranges
-2. **Limits**: Use reasonable limits to avoid loading too much data
-3. **Time Filters**: Always use time-based filtering for large collections
-4. **Aggregation**: Use ArangoDB's built-in aggregation functions rather than loading raw data
-5. **Field Selection**: Use Return Fields to limit data and control flattening scope
-6. **Array Targeting**: For large arrays, consider targeting specific elements (e.g., `items[0]`) instead of flattening entire arrays
-7. **Batch Size**: Configure appropriate batch sizes in datasource settings for large result sets
+1. **Manual Query Execution**: Queries are not executed automatically as you type. Use the "Execute Query" button to run queries for better performance control
+2. **Indexes**: Create appropriate indexes on fields used in filters and time ranges
+3. **Limits**: Use reasonable limits to avoid loading too much data
+4. **Time Filters**: Always use time-based filtering for large collections
+5. **Aggregation**: Use ArangoDB's built-in aggregation functions rather than loading raw data
+6. **Field Selection**: Use Return Fields to limit data and control flattening scope
+7. **Array Targeting**: For large arrays, consider targeting specific elements (e.g., `items[0]`) instead of flattening entire arrays
+8. **Batch Size**: Configure appropriate batch sizes in datasource settings for large result sets
 
 ## Example Indexes
 
