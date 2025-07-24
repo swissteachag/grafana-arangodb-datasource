@@ -22,10 +22,10 @@
       "large": "img/logo.svg"
     },
     "links": [
-      {"name": "GitHub", "url": "https://github.com/your-username/grafana-arangodb-datasource"}
+      {"name": "GitHub", "url": "https://github.com/swissteachag/grafana-arangodb-datasource"}
     ],
     "screenshots": [],
-    "version": "1.0.0",
+    "version": "1.0.2",
     "updated": "2025-07-24"
   },
   "dependencies": {
