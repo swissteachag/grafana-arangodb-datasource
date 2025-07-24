@@ -1,0 +1,35 @@
+{
+  "apiVersion": 1,
+  "type": "datasource",
+  "name": "ArangoDB",
+  "id": "arangodb-datasource",
+  "metrics": true,
+  "annotations": false,
+  "logs": false,
+  "streaming": false,
+  "alerting": true,
+  "backend": true,
+  "executable": "gpx_arangodb-datasource",
+  "routes": [],
+  "info": {
+    "description": "ArangoDB datasource with support for custom queries and multiple collections",
+    "author": {
+      "name": "Guido Walter @Swissteach AG"
+    },
+    "keywords": ["arangodb", "graph", "database"],
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [
+      {"name": "GitHub", "url": "https://github.com/your-username/grafana-arangodb-datasource"}
+    ],
+    "screenshots": [],
+    "version": "1.0.0",
+    "updated": "2025-07-24"
+  },
+  "dependencies": {
+    "grafanaDependency": ">=8.0.0",
+    "plugins": []
+  }
+}
