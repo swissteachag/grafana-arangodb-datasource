@@ -421,6 +421,6 @@ Apache License 2.0
 
 ## Support
 
-- Create issues on GitHub for bug reports
+- Create issues on GitHub for bug reports - we will try to answer as soon as possible
 - Check ArangoDB documentation for AQL syntax: https://www.arangodb.com/docs/stable/aql/
 - Grafana plugin development docs: https://grafana.com/docs/grafana/latest/developers/plugins/
