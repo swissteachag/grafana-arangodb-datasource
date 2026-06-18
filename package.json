@@ -14,9 +14,9 @@
   "author": "Your Name",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@grafana/data": "^12.1.0",
-    "@grafana/runtime": "^12.1.0",
-    "@grafana/ui": "^12.1.0",
+    "@grafana/data": "^12.4.3",
+    "@grafana/runtime": "^12.4.3",
+    "@grafana/ui": "^12.4.3",
     "@types/lodash": "^4.14.191",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
@@ -28,16 +28,16 @@
     "style-loader": "^3.0.0",
     "ts-loader": "^9.0.0",
     "typescript": "^4.9.0",
-    "webpack": "^5.0.0",
+    "webpack": "^5.106.2",
     "webpack-cli": "^5.0.0"
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.18.1"
   },
   "peerDependencies": {
-    "@grafana/data": "^12.1.0",
-    "@grafana/runtime": "^12.1.0",
-    "@grafana/ui": "^12.1.0",
+    "@grafana/data": "^12.4.3",
+    "@grafana/runtime": "^12.4.3",
+    "@grafana/ui": "^12.4.3",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },
